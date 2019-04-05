@@ -15,14 +15,21 @@ from yarl import URL
 from hls_get.remuxer import remux
 
 
-class HLSDownloader(aiohttp.ClientSession):
+class HLSDownloader:
     def __init__(self, link, path, name, coros, **kwargs):
-        super().__init__(trust_env=True, **kwargs)
+        self.session = aiohttp.ClientSession(trust_env=True, **kwargs)
         url = URL(link)
         self.name = name or os.path.basename(url.fragment or link)
         self.sem = asyncio.Semaphore(coros)
         self.path = path
         self.key_cache = dict()
+
+    async def __aenter__(self):
+        await self.session.__aenter__()
+        return self
+
+    async def __aexit__(self):
+        await self.session.__aexit__()
 
     @property
     def cache_dir(self):
@@ -36,7 +43,7 @@ class HLSDownloader(aiohttp.ClientSession):
 
     @backoff.on_exception(backoff.expo, Exception, max_tries=3)
     async def fetch_with_retry(self, link):
-        async with self.sem, self.get(link) as resp:
+        async with self.sem, self.session.get(link) as resp:
             resp.raise_for_status()
             return await resp.read()
 
@@ -56,7 +63,7 @@ class HLSDownloader(aiohttp.ClientSession):
         bar.next()
 
     async def download(self, link):
-        async with self.sem, self.get(link) as resp:
+        async with self.sem, self.session.get(link) as resp:
             resp.raise_for_status()
             m3u8_obj = m3u8.loads(await resp.text(), uri=resp.url.human_repr())
             if not m3u8_obj.media_sequence:
