@@ -2,7 +2,7 @@
 hls-get
 #########
 
-An asynchronous terminal-based hls video stream (m3u8) downloader & combiner, with AES-128 decryption support.
+An asynchronous terminal-based hls(HTTP Live Streaming) VoD video stream (m3u8) downloader & combiner, with AES-128 decryption support.
 
 
 License: GNU General Public License v3
