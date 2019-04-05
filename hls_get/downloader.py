@@ -48,7 +48,7 @@ class HLSDownloader:
             return await resp.read()
 
     async def download_segment(self, seq_num, segment, bar):
-        filename = f'{self.path}/{self.name}/{seq_num}.ts'
+        filename = f'{self.cache_dir}/{seq_num}.ts'
         if not os.path.exists(filename):
             content = await self.fetch_with_retry(segment.absolute_uri)
             key = segment.key
