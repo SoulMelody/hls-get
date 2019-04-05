@@ -28,8 +28,8 @@ class HLSDownloader:
         await self.session.__aenter__()
         return self
 
-    async def __aexit__(self):
-        await self.session.__aexit__()
+    async def __aexit__(self, *args):
+        await self.session.__aexit__(*args)
 
     @property
     def cache_dir(self):
