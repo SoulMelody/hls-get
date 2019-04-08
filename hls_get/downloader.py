@@ -5,9 +5,9 @@ import shutil
 
 import aiofiles
 import aiohttp
-import backoff
 import click
 import m3u8
+import tenacity
 from Cryptodome.Cipher import AES
 from progress.bar import Bar
 from yarl import URL
@@ -41,7 +41,7 @@ class HLSDownloader:
         if clean_up:
             shutil.rmtree(self.cache_dir)
 
-    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    @tenacity.retry(stop=tenacity.stop_after_attempt(3))
     async def fetch_with_retry(self, link):
         async with self.sem, self.session.get(link) as resp:
             resp.raise_for_status()
