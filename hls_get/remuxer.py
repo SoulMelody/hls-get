@@ -3,7 +3,7 @@ import av
 
 def remux(in_name, out_name):
     out_name = f'{out_name}.mp4'
-    with open(out_name, 'wb') as out_file:
+    with open(out_name, 'wb+') as out_file:
         input_ = av.open(in_name, format='hls', options={'codec': 'copy', 'bsf:a': 'aac_adtstoasc'}, metadata_errors='ignore')
         output = av.open(out_file, 'w', format='mp4', metadata_errors='ignore')
 
@@ -13,11 +13,9 @@ def remux(in_name, out_name):
             in_to_out[stream] = output.add_stream(template=stream)
 
         for packet in input_.demux(tuple(in_to_out.keys())):
-            if packet.dts is None:
-                continue
-
-            packet.stream = in_to_out[packet.stream]
-
-            output.mux(packet)
+            if packet.dts is not None:
+                packet.dts -= packet.stream.start_time
+                packet.stream = in_to_out[packet.stream]
+                output.mux(packet)
 
         output.close()
