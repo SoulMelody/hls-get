@@ -12,7 +12,7 @@ def remux(in_name, out_name):
         for stream in input_.streams:
             in_to_out[stream] = output.add_stream(template=stream)
 
-        min_dts = min(stream.start_time for stream in in_to_out.values())
+        min_dts = min(stream.start_time or 0 for stream in in_to_out.values())
 
         for packet in input_.demux(tuple(in_to_out.keys())):
             if packet.dts is not None:

@@ -41,7 +41,10 @@ class HLSDownloader:
         if clean_up:
             shutil.rmtree(self.cache_dir)
 
-    @tenacity.retry(stop=tenacity.stop_after_attempt(3))
+    @tenacity.retry(
+        wait=tenacity.wait_fixed(3),
+        stop=tenacity.stop_after_attempt(10),
+        )
     async def fetch_with_retry(self, link):
         async with self.sem, self.session.get(link) as resp:
             resp.raise_for_status()
