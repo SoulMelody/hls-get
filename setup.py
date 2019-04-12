@@ -13,7 +13,7 @@ requirements = [
     'aiofiles',
     'aiohttp',
     'av',
-    'backoff',
+    'tenacity',
     'm3u8',
     'pycryptodome',
     'progress',

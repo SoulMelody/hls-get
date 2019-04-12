@@ -8,7 +8,7 @@ import aiohttp
 import click
 import m3u8
 import tenacity
-from Cryptodome.Cipher import AES
+from Crypto.Cipher import AES
 from progress.bar import Bar
 from yarl import URL
 

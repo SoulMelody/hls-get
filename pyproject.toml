@@ -32,6 +32,9 @@ pytest-asyncio = "*"
 pytest-aiohttp = "*"
 pytest-runner = "*"
 
+[tool.poetry.scripts]
+hls-get = "hls_get.cli:main"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
