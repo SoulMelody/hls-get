@@ -17,6 +17,7 @@ requirements = [
     'm3u8',
     'pycryptodome',
     'progress',
+    'wrapt',
     'yarl'
 ]
 

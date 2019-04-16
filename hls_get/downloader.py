@@ -1,5 +1,6 @@
 import asyncio
 import binascii
+import functools
 import os
 import shutil
 
@@ -8,6 +9,7 @@ import aiohttp
 import click
 import m3u8
 import tenacity
+import wrapt
 from Crypto.Cipher import AES
 from progress.bar import Bar
 from yarl import URL
@@ -15,14 +17,32 @@ from yarl import URL
 from hls_get.remuxer import remux
 
 
+@functools.lru_cache(maxsize=1)
+def get_retry_wrapper():
+    ctx = click.get_current_context()
+    wrapper = tenacity.retry(
+        wait=tenacity.wait_fixed(ctx.params['delay']),
+        stop=tenacity.stop_after_attempt(ctx.params['retry_times'])
+    )
+    return wrapper
+
+
+@wrapt.decorator
+def retry_with_options(method, instance, args, kwargs):
+    wrapper = get_retry_wrapper()
+    wrapped = wrapper(method)
+    return wrapped(*args, **kwargs)
+
+
 class HLSDownloader:
-    def __init__(self, link, path, name, coros, **kwargs):
+    def __init__(self, link, path, name, coros, clean_up=True, **kwargs):
         self.session = aiohttp.ClientSession(trust_env=True, **kwargs)
         url = URL(link)
-        self.name = name or os.path.basename(url.fragment or link)
+        self.name = name or os.path.basename(url.fragment or url.path)
         self.sem = asyncio.Semaphore(coros)
         self.path = path
         self.key_cache = dict()
+        self.clean_up = clean_up
 
     async def __aenter__(self):
         await self.session.__aenter__()
@@ -37,14 +57,10 @@ class HLSDownloader:
 
     def on_success(self):
         remux(f'{self.cache_dir}/filelist.m3u8', self.name)
-        clean_up = click.confirm('Clean up the cache directory?')
-        if clean_up:
+        if self.clean_up:
             shutil.rmtree(self.cache_dir)
 
-    @tenacity.retry(
-        wait=tenacity.wait_fixed(3),
-        stop=tenacity.stop_after_attempt(10),
-        )
+    @retry_with_options
     async def fetch_with_retry(self, link):
         async with self.sem, self.session.get(link) as resp:
             resp.raise_for_status()

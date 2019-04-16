@@ -24,6 +24,7 @@ click = "*"
 m3u8 = "*"
 pycryptodome = "*"
 progress = "*"
+wrapt = "*"
 yarl = "*"
 
 [tool.poetry.dev-dependencies]
