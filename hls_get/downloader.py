@@ -11,7 +11,7 @@ import m3u8
 import tenacity
 import wrapt
 from Crypto.Cipher import AES
-from progress.bar import Bar
+from progress.bar import ShadyBar
 from yarl import URL
 
 from hls_get.remuxer import remux
@@ -108,7 +108,7 @@ class HLSDownloader:
                     tmp_list.is_endlist = True
                     tasks = []
                     os.makedirs(self.cache_dir, exist_ok=True)
-                    bar = Bar(self.name, max=len(m3u8_obj.segments))
+                    bar = ShadyBar(self.name, max=len(m3u8_obj.segments), suffix='%(percent).1f%% - %(eta_td)s')
                     for i, segment in enumerate(m3u8_obj.segments):
                         tmp_list.add_segment(
                             m3u8.Segment(
