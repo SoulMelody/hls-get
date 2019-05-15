@@ -12,6 +12,7 @@ requirements = [
     'click>=6.0',
     'aiofiles',
     'aiohttp',
+    'async_timeout',
     'av',
     'tenacity',
     'm3u8',

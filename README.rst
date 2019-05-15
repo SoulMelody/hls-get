@@ -20,6 +20,7 @@ Options:
   -N, --names TEXT           Save name
   -C, --coros INTEGER        Max coroutines
   -H, --headers TEXT         Headers parameters like curl's
+  -X, --timeout INTEGER      timeout in seconds
   -c, --clean-up             Clean up the cache directory when completed
   -D, --delay INTEGER        delay seconds before retrying
   -R, --retry-times INTEGER  Max retry times
