@@ -12,10 +12,12 @@ def remux(in_name, out_name):
             for stream in input_.streams
         }
 
-        for stream in input_.streams:
-            for packet in input_.demux(stream):
+        for packet in input_.demux(tuple(input_.streams)):
+            try:
                 if packet.dts is not None:
                     packet.stream = in_to_out[packet.stream]
                     output.mux(packet)
+            except av.AVError:
+                pass
 
         output.close()
