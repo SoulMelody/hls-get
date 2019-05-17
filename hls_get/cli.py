@@ -47,11 +47,12 @@ def main(*args, delay=3, retry_times=10, **kwargs):
     orig_handler = loop.get_exception_handler()
 
     def ignore_ssl_error(loop, context):
-        if context.get('message') == 'SSL error in data received':
+        if context.get('message') in {'SSL error in data received',
+                                      'Fatal error on transport'}:
             # validate we have the right exception, transport and protocol
             exception = context.get('exception')
-            protocol = context.get('protocol')
-            if isinstance(exception, ssl.SSLError) and exception.reason == 'KRB5_S_INIT':
+            if (isinstance(exception, ssl.SSLError) and
+                exception.reason == 'KRB5_S_INIT'):
                 if loop.get_debug():
                     asyncio.log.logger.debug('Ignoring SSL KRB5_S_INIT error')
                 return
