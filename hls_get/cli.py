@@ -1,4 +1,5 @@
 import asyncio
+import ssl
 from itertools import zip_longest
 
 import click
@@ -41,7 +42,25 @@ def main(*args, delay=3, retry_times=10, **kwargs):
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     except ImportError:
         pass
+
     loop = asyncio.get_event_loop()
+    orig_handler = loop.get_exception_handler()
+
+    def ignore_ssl_error(loop, context):
+        if context.get('message') == 'SSL error in data received':
+            # validate we have the right exception, transport and protocol
+            exception = context.get('exception')
+            protocol = context.get('protocol')
+            if isinstance(exception, ssl.SSLError) and exception.reason == 'KRB5_S_INIT':
+                if loop.get_debug():
+                    asyncio.log.logger.debug('Ignoring SSL KRB5_S_INIT error')
+                return
+        if orig_handler is not None:
+            orig_handler(loop, context)
+        else:
+            loop.default_exception_handler(context)
+
+    loop.set_exception_handler(ignore_ssl_error)
     loop.run_until_complete(download(*args, **kwargs))
 
 
