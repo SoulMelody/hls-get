@@ -4,8 +4,14 @@ import av
 def remux(in_name, out_name):
     out_name = f'{out_name}.mp4'
     with open(out_name, 'wb+') as out_file:
-        input_ = av.open(in_name, format='hls', options={'codec': 'copy', 'bsf:a': 'aac_adtstoasc'}, metadata_errors='ignore')
-        output = av.open(out_file, 'w', format='mp4', metadata_errors='ignore')
+        input_ = av.open(in_name, format='hls', options={
+            'vcodec': 'copy',
+            'acodec': 'aac',
+            'bsf:a': 'aac_adtstoasc'
+        }, metadata_errors='ignore')
+        output = av.open(out_file, 'w', format='mp4', options={
+            'strict': '-1'
+        }, metadata_errors='ignore')
 
         in_to_out = {
             stream: output.add_stream(template=stream)
@@ -21,3 +27,4 @@ def remux(in_name, out_name):
                 pass
 
         output.close()
+        return out_file.tell()

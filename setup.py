@@ -14,6 +14,7 @@ requirements = [
     'aiohttp',
     'async_timeout',
     'av',
+    'cached-property',
     'tenacity',
     'm3u8',
     'pycryptodome',

@@ -1,6 +1,5 @@
 import asyncio
 import binascii
-import functools
 import os
 import shutil
 
@@ -12,26 +11,28 @@ import m3u8
 import tenacity
 import wrapt
 from Crypto.Cipher import AES
+from cached_property import cached_property
 from progress.bar import ShadyBar
 from yarl import URL
 
 from hls_get.remuxer import remux
 
 
-@functools.lru_cache(maxsize=1)
-def get_retry_wrapper():
-    ctx = click.get_current_context()
-    wrapper = tenacity.retry(
-        wait=tenacity.wait_fixed(ctx.params['delay']),
-        stop=tenacity.stop_after_attempt(ctx.params['retry_times'])
-    )
-    return wrapper
+class lazy_attribute:
+    """ A property that caches itself to the class object. """
 
+    def __init__(self, func):
+        functools.update_wrapper(self, func, updated=[])
+        self.getter = func
+
+    def __get__(self, obj, cls):
+        value = self.getter(cls)
+        setattr(cls, self.__name__, value)
+        return value
 
 @wrapt.decorator
 def retry_with_options(method, instance, args, kwargs):
-    wrapper = get_retry_wrapper()
-    wrapped = wrapper(method)
+    wrapped = instance.retry_wrapper(method)
     return wrapped(*args, **kwargs)
 
 
@@ -53,14 +54,26 @@ class HLSDownloader:
     async def __aexit__(self, *args):
         await self.session.__aexit__(*args)
 
-    @property
+    @lazy_attribute
+    def retry_wrapper(cls):
+        ctx = click.get_current_context()
+        wrapper = tenacity.retry(
+            wait=tenacity.wait_fixed(ctx.params['delay']),
+            stop=tenacity.stop_after_attempt(ctx.params['retry_times'])
+        )
+        return wrapper
+
+    @cached_property
     def cache_dir(self):
         return f'{self.path}/{self.name}'
 
     def on_success(self):
-        remux(f'{self.cache_dir}/filelist.m3u8', self.name)
-        if self.clean_up:
-            shutil.rmtree(self.cache_dir)
+        pos = remux(f'{self.cache_dir}/filelist.m3u8', self.name)
+        if pos > 0:
+            if self.clean_up:
+                shutil.rmtree(self.cache_dir)
+        else:
+            click.echo(f'failed to convert {self.name}')
 
     @retry_with_options
     async def fetch_with_retry(self, link, text=False):

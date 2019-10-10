@@ -27,6 +27,7 @@ progress = "*"
 wrapt = "*"
 yarl = "*"
 async_timeout = "*"
+cached-property = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
