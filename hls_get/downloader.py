@@ -18,23 +18,10 @@ from yarl import URL
 
 from hls_get.remuxer import remux
 
-
-class lazy_attribute:
-    """ A property that caches itself to the class object. """
-
-    def __init__(self, func):
-        functools.update_wrapper(self, func, updated=[])
-        self.getter = func
-
-    def __get__(self, obj, cls):
-        value = self.getter(cls)
-        setattr(cls, self.__name__, value)
-        return value
-
 @wrapt.decorator
 def retry_with_options(method, instance, args, kwargs):
-    wrapped = instance.retry_wrapper(method)
-    return wrapped(*args, **kwargs)
+    wrapper = instance.retry_wrapper
+    return wrapper(method)(*args, **kwargs)
 
 
 class HLSDownloader:
@@ -55,7 +42,7 @@ class HLSDownloader:
     async def __aexit__(self, *args):
         await self.session.__aexit__(*args)
 
-    @lazy_attribute
+    @cached_property
     def retry_wrapper(cls):
         ctx = click.get_current_context()
         wrapper = tenacity.retry(
