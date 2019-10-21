@@ -11,9 +11,11 @@ License: GNU General Public License v3
 Usage
 --------
 
-hls-get [OPTIONS] [LINKS]...
+hls-get [OPTIONS] LINKS...
 
-  Download m3u8 links (like "http://www.example.domain/path/to/index.m3u8#Save name" etc.) asynchronously, and merge into mp4 files.
+  Download m3u8 links (like
+  "http://www.example.domain/path/to/index.m3u8#Save name"  etc.)
+  asynchronously, and merge into mp4 files.
 
 Options:
   -P, --path TEXT            Save path
@@ -22,6 +24,7 @@ Options:
   -H, --headers TEXT         Headers parameters like curl's
   -X, --timeout INTEGER      timeout in seconds
   -c, --clean-up             Clean up the cache directory when completed
+  --verify                   Verify certificate
   -D, --delay INTEGER        delay seconds before retrying
   -R, --retry-times INTEGER  Max retry times
-
+  --help                     Show this message and exit.

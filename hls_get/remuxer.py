@@ -26,5 +26,6 @@ def remux(in_name, out_name):
             except av.AVError:
                 pass
 
+        input_.close()
         output.close()
         return out_file.tell()

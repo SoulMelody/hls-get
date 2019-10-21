@@ -1,5 +1,6 @@
 import asyncio
 import binascii
+import functools
 import os
 import shutil
 
