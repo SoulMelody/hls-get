@@ -129,5 +129,6 @@ class HLSDownloader:
                     )
                 tmp_list.dump(f'{self.cache_dir}/filelist.m3u8')
                 await asyncio.gather(*tasks)
+                bar.finish()
         else:
             click.echo('Live streaming media is not suppported!')
