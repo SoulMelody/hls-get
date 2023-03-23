@@ -13,7 +13,7 @@ async def download(links, path, names, coros, headers, timeout, clean_up, verify
     headers_parser = HeadersParser()
     header_lines = [b'', *(line.encode('latin-1') for line in headers), b'']
     parsed_headers, raw_headers = headers_parser.parse_headers(header_lines)
-    kwargs = dict()
+    kwargs = {}
     if not verify:
         kwargs['connector'] = TCPConnector(verify_ssl=False)
     for link, name in zip_longest(links, names):
